@@ -3,6 +3,7 @@ import keyboard
 import sys
 import random, getpass
 sleep = time.sleep
+
 def hp_bar(max_hp, hp):
     a = int(hp/max_hp *10)
     b = 10-a
@@ -112,25 +113,60 @@ name = input('당신의 이름은?')
 def enemy_die():
     text(f'{name}의 승리!')
     sys.exit()
+
+
+#공격형 스킬
+def damage_skill(entity, to, level, skill):
+    entity['자세'] = ''
+    text(f'{entity}')
+    damage = entity['공격력'] * level
+    if to['보호막'] > damage:
+        to['보호막'] > damage
+    elif to['보호막'] < damage:
+        to['체력'] -= damage - to['보호막']
+        to['보호막'] = 0
+    if to['자세'] == 'counter':
+        damage_skill(to, entity)
+
+
+#방어형 스킬
+def guard_skill(entity, level, skill):
+    entity['보호막'] += entity['최대체력']*(0.1*level)
     
-def damage_skill(n):
-    text(f'{name}의 {n[0]}!')
-    dummy_2['체력'] -= n[3]
-    text_skip(f'적에게 {n[3]}만큼 피해')
-    hp_bar(dummy_2['최대체력'],dummy_2['체력'])
-    input()
-    if dummy_2['체력'] <= 0:
-        enemy_die()
+#반격 스킬
+def declar_counter(entity, name, level, skill):
+    entity['자세'] += level
+
+def act_counter(on, to, skill):
+    damage_skill
+
+#버프형 스킬
+def buff_skill(entity, type, turn, level):
+    if type == 'speed':
+        entity['속도'] += level * 5
+    elif type == 'attack':
+        entity['공격력'] *= 1 + (level*0.1)
+        entity['공격력'] = int(entity['공격력'])
+
+
+
+
+#리스트 자료들
 act_list = [['공격','상대방을 공격합니다',2, 5],['방어','방어 자세를 2회 취합니다',3],['스킬','스킬을 사용합니다',5]]
 act_list_enemy = [['1번 행동',1, 2],['2번 행동',3,3],['3번 행동',5,5]]
 player_guard = 0
 skill = [['화염구', '지끼미 상대방을 그냥 조져뿐따이', 3, 10], ['GAY','게이는 문화다', 1],['취소', '스킬취소', 0]]
-dummy_1 = {'체력':20,'공격력':5,'방어력':5,'속도':15, '최대체력':20}
-dummy_2 = {'체력':20,'공격력':10,'방어력':5,'속도':10, '최대체력':20}
+dummy_1 = {'이름': '무명', '체력':20,'공격력':5, '원공격력': 5, '방어력':5,'속도':15, '최대체력':20, '보호막': 0, '자세': '', }
+dummy_2 = {'이름': '이름 없는자', '체력':20,'공격력':10, '원공격력':10, '방어력':5,'속도':10, '최대체력':20, '보호막': 0}
 turn_count = [dummy_1['속도'], dummy_2['속도']]
 ft_me = [['선수입니다! 싸움에 있어 이만한것이 없지요!','재빠른 발놀림으로 갑시다!','선빵필승 아니겠습니까!'],['상대방이 선수를 가져갑니다!','침착하게 준비합시다! 상대방이 들어옵니다','느긋하게 가봅시다']]
+
+
+#text delete의 줄임말, 그냥 줄넘김 30번
 def td():
     print('\n'*30)
+
+#플레이어의 차례
 def player_turn():
     global dummy_1, player_guard
     turn_count[0] -= 100
@@ -150,11 +186,15 @@ def player_turn():
     if len(c) == 4:
         damage_skill(c)
     turn_check()
+
+#플레이어의 죽음
 def die():
     td()
     text('당신은 죽었습니다')
     text('게임오버')
     sys.exit()
+
+#상대방의 차례
 def enemy_turn():  
     global dummy_2, player_guard, turn
     turn_count[1] -= 100
@@ -184,6 +224,7 @@ def enemy_turn():
     turn_check()
 turn = 0
 
+#턴 체크
 def turn_check(b = dummy_1, c = dummy_2):
     global turn_count, turn
     turn += 1
@@ -207,7 +248,8 @@ def turn_check(b = dummy_1, c = dummy_2):
         player_turn()
     elif turn_count[1] > 99:
         enemy_turn()
-    
+
+#싸움 선언    
 def fight_turn(a,b):
     global turn
     turn = 0
